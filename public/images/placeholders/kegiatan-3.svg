@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#2c6b53"/>
+      <stop offset="1" stop-color="#1e3a31"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <circle cx="690" cy="520" r="200" fill="#60a387" opacity="0.22"/>
+  <circle cx="120" cy="90" r="170" fill="#0f211b" opacity="0.35"/>
+  <circle cx="700" cy="120" r="60" fill="#e15d50" opacity="0.28"/>
+  <g fill="#bcddcb" opacity="0.32">
+    <path d="M600 0l200 170v-40L650 0z"/>
+    <path d="M560 0l240 230v30L540 0z"/>
+  </g>
+  <text x="400" y="310" text-anchor="middle" font-family="system-ui, sans-serif" font-size="40" font-weight="700" fill="#ffffff" opacity="0.95">Foto Kegiatan</text>
+  <text x="400" y="362" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" fill="#bcddcb">Pelatihan Kreativitas &amp; Kewirausahaan</text>
+</svg>

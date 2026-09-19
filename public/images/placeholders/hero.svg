@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="750" viewBox="0 0 1200 750">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e3a31"/>
+      <stop offset="1" stop-color="#2c6b53"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="750" fill="url(#bg)"/>
+  <circle cx="1040" cy="120" r="260" fill="#60a387" opacity="0.18"/>
+  <circle cx="120" cy="720" r="300" fill="#0f211b" opacity="0.35"/>
+  <circle cx="180" cy="120" r="90" fill="#e15d50" opacity="0.25"/>
+  <g fill="#bcddcb" opacity="0.35">
+    <path d="M900 0l300 210v-50L950 0z"/>
+    <path d="M850 0l350 260v40L800 0z"/>
+  </g>
+  <text x="600" y="382" text-anchor="middle" font-family="system-ui, sans-serif" font-size="54" font-weight="700" fill="#ffffff" opacity="0.95">Foto Hero</text>
+  <text x="600" y="440" text-anchor="middle" font-family="system-ui, sans-serif" font-size="22" fill="#bcddcb">Dokumentasi Kegiatan Karang Taruna</text>
+</svg>

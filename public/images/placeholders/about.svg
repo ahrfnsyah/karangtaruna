@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="720" viewBox="0 0 960 720">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e3a31"/>
+      <stop offset="1" stop-color="#2c6b53"/>
+    </linearGradient>
+  </defs>
+  <rect width="960" height="720" fill="url(#bg)"/>
+  <circle cx="820" cy="100" r="220" fill="#60a387" opacity="0.18"/>
+  <circle cx="120" cy="640" r="240" fill="#0f211b" opacity="0.35"/>
+  <circle cx="800" cy="600" r="70" fill="#e15d50" opacity="0.25"/>
+  <g fill="#bcddcb" opacity="0.35">
+    <path d="M720 0l240 168v-40L760 0z"/>
+    <path d="M680 0l280 208v32L640 0z"/>
+  </g>
+  <text x="480" y="372" text-anchor="middle" font-family="system-ui, sans-serif" font-size="46" font-weight="700" fill="#ffffff" opacity="0.95">Foto Tentang</text>
+  <text x="480" y="428" text-anchor="middle" font-family="system-ui, sans-serif" font-size="20" fill="#bcddcb">Kebersamaan Anggota Karang Taruna</text>
+</svg>

@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="800" viewBox="0 0 800 800">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#265747"/>
+      <stop offset="1" stop-color="#1e3a31"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="800" fill="url(#bg)"/>
+  <circle cx="680" cy="660" r="220" fill="#60a387" opacity="0.22"/>
+  <circle cx="130" cy="130" r="190" fill="#0f211b" opacity="0.35"/>
+  <circle cx="660" cy="140" r="60" fill="#e15d50" opacity="0.28"/>
+  <g fill="#bcddcb" opacity="0.32">
+    <path d="M600 0l200 170v-40L650 0z"/>
+    <path d="M560 0l240 220v28L540 0z"/>
+  </g>
+  <text x="400" y="420" text-anchor="middle" font-family="system-ui, sans-serif" font-size="44" font-weight="700" fill="#ffffff" opacity="0.95">Foto Galeri</text>
+</svg>

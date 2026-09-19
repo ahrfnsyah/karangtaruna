@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="600" viewBox="0 0 800 600">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#1e3a31"/>
+      <stop offset="1" stop-color="#265747"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="600" fill="url(#bg)"/>
+  <circle cx="690" cy="90" r="180" fill="#60a387" opacity="0.2"/>
+  <circle cx="90" cy="530" r="210" fill="#0f211b" opacity="0.35"/>
+  <circle cx="150" cy="100" r="60" fill="#e15d50" opacity="0.28"/>
+  <g fill="#bcddcb" opacity="0.35">
+    <path d="M600 0l200 140v-34L640 0z"/>
+    <path d="M560 0l240 180v28L530 0z"/>
+  </g>
+  <text x="400" y="310" text-anchor="middle" font-family="system-ui, sans-serif" font-size="40" font-weight="700" fill="#ffffff" opacity="0.95">Foto Kegiatan</text>
+  <text x="400" y="362" text-anchor="middle" font-family="system-ui, sans-serif" font-size="18" fill="#bcddcb">Gotong Royong Bersih Lingkungan</text>
+</svg>

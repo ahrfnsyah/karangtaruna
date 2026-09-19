@@ -1,69 +1,147 @@
-import Image from "next/image";
+import type { Metadata } from "next";
 
-export default function Home() {
+import { AboutPreview } from "@/components/home/about-preview";
+import { Cta } from "@/components/home/cta";
+import { GalleryPreview } from "@/components/home/gallery-preview";
+import { Hero } from "@/components/home/hero";
+import { LatestActivities } from "@/components/home/latest-activities";
+import { Programs } from "@/components/home/programs";
+import { Statistics } from "@/components/home/statistics";
+import { siteConfig } from "@/lib/site";
+import { createClient } from "@/lib/supabase/server";
+import type { ActivityPreviewItem, GalleryPreviewItem, StatItem } from "@/lib/types";
+
+/*
+ * Supabase Server Client berbasis cookie => halaman tidak bisa di-prerender
+ * statis. force-dynamic membuat data selalu dirender server-side dan segar,
+ * konsisten dengan halaman lain yang sudah dimigrasikan.
+ *
+ * Setiap section mengambil datanya sendiri. Kegagalan satu section tidak
+ * menjatuhkan section lain: tiap query punya error state sendiri.
+ */
+export const dynamic = "force-dynamic";
+
+export const metadata: Metadata = {
+  title: { absolute: siteConfig.name },
+  description: siteConfig.description,
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    locale: siteConfig.locale,
+    siteName: siteConfig.name,
+    title: siteConfig.name,
+    description: siteConfig.description,
+    url: "/",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: siteConfig.name,
+    description: siteConfig.description,
+  },
+};
+
+type SectionResult<T> = {
+  data: T[];
+  error: string | null;
+};
+
+async function getHomeStats(): Promise<SectionResult<StatItem>> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("stats")
+      .select("value, label")
+      .eq("is_published", true)
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      console.error("Gagal mengambil statistik dari Supabase:", error.message);
+      return { data: [], error: "Data statistik sementara tidak dapat ditampilkan." };
+    }
+
+    return { data: (data ?? []) as StatItem[], error: null };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Terjadi kesalahan yang tidak diketahui";
+    console.error("Gagal mengambil statistik dari Supabase:", message);
+    return { data: [], error: "Data statistik sementara tidak dapat ditampilkan." };
+  }
+}
+
+async function getLatestActivities(): Promise<SectionResult<ActivityPreviewItem>> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("activities")
+      .select("slug, title, category, event_date, excerpt, image_path, image_alt")
+      .eq("is_published", true)
+      .order("event_date", { ascending: false })
+      .limit(3);
+
+    if (error) {
+      console.error("Gagal mengambil kegiatan terbaru dari Supabase:", error.message);
+      return { data: [], error: "Kegiatan terbaru sementara tidak dapat ditampilkan." };
+    }
+
+    return { data: (data ?? []) as ActivityPreviewItem[], error: null };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Terjadi kesalahan yang tidak diketahui";
+    console.error("Gagal mengambil kegiatan terbaru dari Supabase:", message);
+    return { data: [], error: "Kegiatan terbaru sementara tidak dapat ditampilkan." };
+  }
+}
+
+async function getGalleryPreview(): Promise<SectionResult<GalleryPreviewItem>> {
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("gallery_items")
+      .select("image_path, image_alt")
+      .eq("is_published", true)
+      .order("sort_order", { ascending: true })
+      .limit(5);
+
+    if (error) {
+      console.error("Gagal mengambil pratinjau galeri dari Supabase:", error.message);
+      return { data: [], error: "Pratinjau galeri sementara tidak dapat ditampilkan." };
+    }
+
+    return { data: (data ?? []) as GalleryPreviewItem[], error: null };
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Terjadi kesalahan yang tidak diketahui";
+    console.error("Gagal mengambil pratinjau galeri dari Supabase:", message);
+    return { data: [], error: "Pratinjau galeri sementara tidak dapat ditampilkan." };
+  }
+}
+
+export default async function Home() {
+  const [statsResult, activitiesResult, galleryResult] = await Promise.allSettled([
+    getHomeStats(),
+    getLatestActivities(),
+    getGalleryPreview(),
+  ]);
+
+  const stats =
+    statsResult.status === "fulfilled"
+      ? statsResult.value
+      : { data: [], error: "Data statistik sementara tidak dapat ditampilkan." };
+  const activities =
+    activitiesResult.status === "fulfilled"
+      ? activitiesResult.value
+      : { data: [], error: "Kegiatan terbaru sementara tidak dapat ditampilkan." };
+  const gallery =
+    galleryResult.status === "fulfilled"
+      ? galleryResult.value
+      : { data: [], error: "Pratinjau galeri sementara tidak dapat ditampilkan." };
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+    <>
+      <Hero />
+      <AboutPreview />
+      <Statistics stats={stats.data} error={stats.error} />
+      <Programs />
+      <LatestActivities items={activities.data} error={activities.error} />
+      <GalleryPreview items={gallery.data} error={gallery.error} />
+      <Cta />
+    </>
   );
 }
