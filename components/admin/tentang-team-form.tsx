@@ -1,12 +1,17 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
 
 import { cn } from "@/lib/utils";
 
 import { LinkButton } from "@/components/ui/button";
 import { SubmitButton } from "@/components/admin/submit-button";
-import { SORT_ORDER_PATTERN, TEAM_GROUP_SET } from "@/lib/tentang-admin";
+import {
+  SORT_ORDER_PATTERN,
+  TEAM_GROUP_SET,
+  TEAM_MAX_NAMES,
+  TEAM_NAME_MAX_LENGTH,
+} from "@/lib/tentang-admin";
 
 const INPUT_BASE =
   "w-full rounded-control border bg-background px-4 py-2.5 text-sm text-foreground placeholder:text-muted-foreground";
@@ -21,7 +26,7 @@ type TeamFormAction = (
 ) => Promise<TeamFormState>;
 
 export type TeamMemberInitial = {
-  name: string;
+  names: string[];
   position: string;
   group_name: string;
   sort_order: string;
@@ -45,6 +50,10 @@ export function TeamMemberForm({ action, submitLabel, initial, id }: TeamFormPro
     error: null,
   });
 
+  const [names, setNames] = useState<string[]>(
+    initial?.names.length ? initial.names : [""],
+  );
+
   const errorProps = state.error
     ? {
         "aria-invalid": true,
@@ -52,30 +61,21 @@ export function TeamMemberForm({ action, submitLabel, initial, id }: TeamFormPro
       }
     : {};
 
+  function handleAddName() {
+    setNames((prev) => (prev.length >= TEAM_MAX_NAMES ? prev : [...prev, ""]));
+  }
+
+  function handleRemoveName(index: number) {
+    setNames((prev) => (prev.length <= 1 ? prev : prev.filter((_, i) => i !== index)));
+  }
+
   return (
     <form action={formAction} className="space-y-5" noValidate>
       {id ? <input type="hidden" name="id" value={id} /> : null}
 
       <div>
-        <label htmlFor="name" className="mb-1.5 block text-sm font-medium text-foreground">
-          Nama
-        </label>
-        <input
-          id="name"
-          name="name"
-          type="text"
-          required
-          maxLength={200}
-          defaultValue={initial?.name ?? ""}
-          placeholder="Contoh: Ahmad Fauzi"
-          className={cn(INPUT_BASE, "border-border")}
-          {...errorProps}
-        />
-      </div>
-
-      <div>
         <label htmlFor="position" className="mb-1.5 block text-sm font-medium text-foreground">
-          Posisi / Jabatan
+          Jabatan
         </label>
         <input
           id="position"
@@ -131,6 +131,60 @@ export function TeamMemberForm({ action, submitLabel, initial, id }: TeamFormPro
             Angka terkecil tampil paling awal.
           </p>
         </div>
+      </div>
+
+      <div className="space-y-4">
+        <div className="flex items-center justify-between">
+          <p className="mb-1.5 block text-sm font-medium text-foreground">
+            Nama ({names.length}/{TEAM_MAX_NAMES})
+          </p>
+          <button
+            type="button"
+            onClick={handleAddName}
+            disabled={names.length >= TEAM_MAX_NAMES}
+            className="rounded-control border border-border px-3 py-1.5 text-sm font-medium text-foreground transition hover:bg-muted disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            + Tambah Nama
+          </button>
+        </div>
+
+        {names.map((name, index) => (
+          <div key={index} className="flex items-start gap-3">
+            <div className="flex-1">
+              <label
+                htmlFor={`nama-${index}`}
+                className="mb-1.5 block text-sm font-medium text-foreground"
+              >
+                Nama {index + 1}
+              </label>
+              <input
+                id={`nama-${index}`}
+                name={`nama-${index}`}
+                type="text"
+                required
+                maxLength={TEAM_NAME_MAX_LENGTH}
+                defaultValue={name ?? ""}
+                placeholder="Contoh: Ahmad Fauzi"
+                className={cn(INPUT_BASE, "border-border")}
+                {...errorProps}
+              />
+            </div>
+            {names.length > 1 ? (
+              <button
+                type="button"
+                onClick={() => handleRemoveName(index)}
+                className="mt-7 rounded-control border border-border px-3 py-2 text-sm font-medium text-foreground transition hover:bg-muted"
+                aria-label={`Hapus nama ${index + 1}`}
+              >
+                Hapus
+              </button>
+            ) : null}
+          </div>
+        ))}
+
+        <p className="text-xs text-muted-foreground">
+          Minimal 1 nama, maksimal {TEAM_MAX_NAMES} nama untuk satu jabatan.
+        </p>
       </div>
 
       <div className="flex items-start gap-3 rounded-control border border-border bg-muted/50 px-4 py-3">

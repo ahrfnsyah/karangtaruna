@@ -34,6 +34,77 @@ export const ABOUT_ICON_SET = new Set<string>(ABOUT_ICONS);
 export const SORT_ORDER_PATTERN = /^-?\d{1,6}$/;
 export const INTERNAL_ITEM_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 
+export const TEAM_MAX_NAMES = 5;
+export const TEAM_NAME_MAX_LENGTH = 120;
+
+/**
+ * Nilai satu jabatan/kelompok yang boleh berisi 1–5 nama (maks TEAM_MAX_NAMES).
+ * Semua nama memakai group_name + sort_order yang sama; satu nama = satu row
+ * di tabel team_members.
+ */
+export type TeamGroupFormValues = {
+  position: string;
+  group_name: string;
+  sort_order: number;
+  is_active: boolean;
+  names: string[];
+};
+
+/**
+ * Parser FormData "Tambah/Ubah Pengurus" yang bersifat group: membaca
+ * position, group_name, sort_order, is_active sekali, lalu nama array
+ * `nama-0`..`nama-4` (wajib minimal 1, maksimal TEAM_MAX_NAMES).
+ */
+export function parseTeamGroupForm(input: {
+  position: string;
+  groupName: string;
+  sortOrder: string;
+  isActive: boolean;
+  names: Array<string | null>;
+}): { ok: true; values: TeamGroupFormValues } | { ok: false; error: string } {
+  const position = input.position.trim();
+  if (!position) {
+    return { ok: false, error: "Jabatan wajib diisi." };
+  }
+  if (position.length > 200) {
+    return { ok: false, error: "Jabatan terlalu panjang (maksimal 200 karakter)." };
+  }
+
+  const group_name = input.groupName.trim();
+  if (!TEAM_GROUP_SET.has(group_name)) {
+    return { ok: false, error: "Kelompok yang dipilih tidak valid." };
+  }
+
+  const sortOrderRaw = input.sortOrder.trim();
+  const sort_order = sortOrderRaw === "" ? 0 : Number(sortOrderRaw);
+  if (sortOrderRaw !== "" && (!SORT_ORDER_PATTERN.test(sortOrderRaw) || sort_order < 0)) {
+    return { ok: false, error: "Urutan harus berupa angka 0 atau lebih." };
+  }
+
+  const names: string[] = [];
+  for (const raw of input.names) {
+    const name = (raw ?? "").trim();
+    if (!name) {
+      continue;
+    }
+    if (name.length > TEAM_NAME_MAX_LENGTH) {
+      return { ok: false, error: `Nama terlalu panjang (maksimal ${TEAM_NAME_MAX_LENGTH} karakter).` };
+    }
+    names.push(name);
+  }
+  if (names.length < 1) {
+    return { ok: false, error: "Minimal satu nama wajib diisi." };
+  }
+  if (names.length > TEAM_MAX_NAMES) {
+    return { ok: false, error: `Maksimal ${TEAM_MAX_NAMES} nama per jabatan.` };
+  }
+
+  return {
+    ok: true,
+    values: { position, group_name, sort_order, is_active: input.isActive, names },
+  };
+}
+
 export type StatFormValues = {
   label: string;
   value: string;

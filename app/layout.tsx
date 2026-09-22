@@ -1,9 +1,13 @@
 import type { Metadata, Viewport } from "next";
+import type { ReactNode } from "react";
+
 import { Geist } from "next/font/google";
 
 import { Footer } from "@/components/layout/footer";
 import { Navbar } from "@/components/layout/navbar";
+
 import { siteConfig } from "@/lib/site";
+
 import "./globals.css";
 
 const geistSans = Geist({
@@ -19,7 +23,9 @@ export const metadata: Metadata = {
     template: `%s — ${siteConfig.name}`,
   },
   description: siteConfig.description,
-  alternates: { canonical: "/" },
+  alternates: {
+    canonical: "/",
+  },
   openGraph: {
     type: "website",
     locale: siteConfig.locale,
@@ -40,7 +46,11 @@ export const viewport: Viewport = {
   colorScheme: "light",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+type RootLayoutProps = {
+  children: ReactNode;
+};
+
+export default function RootLayout({ children }: RootLayoutProps) {
   return (
     <html
       lang="id"
@@ -53,10 +63,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         >
           Langsung ke konten
         </a>
+
         <Navbar />
+
         <main id="main" className="flex flex-1 flex-col">
           {children}
         </main>
+
         <Footer />
       </body>
     </html>

@@ -28,16 +28,32 @@ type EditTeamMemberPageProps = {
 
 export default async function EditTeamMemberPage({ params }: EditTeamMemberPageProps) {
   const { id } = await params;
+  if (!id) {
+    notFound();
+  }
 
   const supabase = await createClient();
 
-  const { data, error } = await supabase
+  const { data: clicked } = await supabase
     .from("team_members")
-    .select("id, name, position, group_name, sort_order, is_active")
+    .select("position, group_name, sort_order")
     .eq("id", id)
     .maybeSingle();
 
-  if (error || !data) {
+  if (!clicked) {
+    notFound();
+  }
+
+  const { data } = await supabase
+    .from("team_members")
+    .select("id, name, position, group_name, sort_order, is_active")
+    .eq("position", clicked.position)
+    .eq("group_name", clicked.group_name)
+    .eq("sort_order", clicked.sort_order)
+    .order("sort_order", { ascending: true })
+    .order("id", { ascending: true });
+
+  if (!data || data.length === 0) {
     notFound();
   }
 
@@ -55,13 +71,13 @@ export default async function EditTeamMemberPage({ params }: EditTeamMemberPageP
         <TeamMemberForm
           action={updateTeamMember}
           submitLabel="Simpan Perubahan"
-          id={data.id}
+          id={data[0].id}
           initial={{
-            name: data.name,
-            position: data.position,
-            group_name: data.group_name,
-            sort_order: String(data.sort_order),
-            is_active: data.is_active,
+            names: data.map((row) => row.name),
+            position: data[0].position,
+            group_name: data[0].group_name,
+            sort_order: String(data[0].sort_order),
+            is_active: data[0].is_active,
           }}
         />
       </Card>

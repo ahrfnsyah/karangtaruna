@@ -60,7 +60,10 @@ export function buildMediaUrl(objectPath: string): string | null {
 }
 
 /** Object path baru berbentuk "galeri/<uuid>.<ext>". */
-export function newMediaObjectPath(contentType: string): string {
+export function newMediaObjectPath(
+  contentType: string,
+  folder = "galeri",
+): string {
   const ext = IMAGE_EXTENSIONS[contentType] ?? "jpg";
-  return `galeri/${crypto.randomUUID()}.${ext}`;
+  return `${folder}/${crypto.randomUUID()}.${ext}`;
 }

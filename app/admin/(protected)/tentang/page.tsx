@@ -2,13 +2,11 @@
 
 import {
   Card,
-  CardDescription,
-  CardHeader,
-  CardTitle,
+
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { LinkButton } from "@/components/ui/button";
-import { ArrowLeftIcon, PlusIcon } from "@/components/ui/icons";
+import { PlusIcon } from "@/components/ui/icons";
 
 import { pageMetadata } from "@/lib/metadata";
 import { createClient } from "@/lib/supabase/server";

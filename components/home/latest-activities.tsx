@@ -45,7 +45,7 @@ export function LatestActivities({ items, error }: LatestActivitiesProps) {
           <div className="mt-12 grid gap-6 md:grid-cols-3">
             {items.map((activity) => (
               <Card key={activity.slug} hover className="relative flex flex-col overflow-hidden">
-                <div className="relative aspect-[4/3] overflow-hidden">
+                <div className="relative aspect-4/3 overflow-hidden">
                   <Image
                     src={resolveGambar(activity.image_path)}
                     alt={activity.image_alt}
