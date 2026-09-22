@@ -146,14 +146,16 @@ async function extractImageFile(formData: FormData): Promise<ImageExtractResult>
   }
 
   const file = value as File;
+  // Browser bisa mengirim File kosong (size 0, tanpa nama) saat admin tidak
+  // memilih file sama sekali. Bukan file baru — bawa sebagai "tidak ada file".
+  if (file.size === 0) {
+    return { ok: true, hasFile: false };
+  }
   if (!ALLOWED_IMAGE_TYPES.has(file.type)) {
     return {
       ok: false,
       error: "Format file tidak didukung. Hanya JPEG, PNG, WebP, atau AVIF.",
     };
-  }
-  if (file.size === 0) {
-    return { ok: false, error: "File gambar kosong." };
   }
   if (file.size > MAX_IMAGE_BYTES) {
     return { ok: false, error: "Ukuran file melebihi batas maksimal 5 MB." };
