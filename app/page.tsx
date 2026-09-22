@@ -59,6 +59,8 @@ type HomeSettings = {
   hero_description: string;
   hero_image_path: string | null;
   hero_image_alt: string;
+  about_image_path: string | null;
+  about_image_alt: string;
 };
 
 /**
@@ -73,9 +75,11 @@ async function getHomeSettings(): Promise<HomeSettings> {
 
     const { data, error } = await supabase
       .from("site_settings")
-      .select("hero_description, hero_image_path, hero_image_alt")
-      .eq("id", 1)
-      .maybeSingle();
+      .select(
+      "hero_description, hero_image_path, hero_image_alt, about_image_path, about_image_alt",
+    )
+    .eq("id", 1)
+    .maybeSingle();
 
     if (error || !data) {
   console.error(
@@ -87,6 +91,8 @@ async function getHomeSettings(): Promise<HomeSettings> {
     hero_description: "",
     hero_image_path: null,
     hero_image_alt: "",
+    about_image_path: null,
+    about_image_alt: "",
   };
 }
 
@@ -94,6 +100,8 @@ return {
   hero_description: data.hero_description ?? "",
   hero_image_path: data.hero_image_path ?? null,
   hero_image_alt: data.hero_image_alt ?? "",
+  about_image_path: data.about_image_path ?? null,
+  about_image_alt: data.about_image_alt ?? "",
 };
   } catch (err) {
     const message =
@@ -110,6 +118,8 @@ return {
       hero_description: "",
       hero_image_path: null,
       hero_image_alt: "",
+      about_image_path: null,
+      about_image_alt: "",
     };
   }
 }
@@ -280,6 +290,8 @@ export default async function Home() {
         hero_description: "",
         hero_image_path: null,
         hero_image_alt: "",
+        about_image_path: null,
+        about_image_alt: "",
       };
 
   const stats =
@@ -317,7 +329,10 @@ export default async function Home() {
   imageAlt={settings.hero_image_alt}
 />
 
-      <AboutPreview />
+      <AboutPreview
+  imagePath={settings.about_image_path}
+  imageAlt={settings.about_image_alt}
+/>
 
       <Statistics
         stats={stats.data}

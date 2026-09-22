@@ -60,6 +60,9 @@ type SiteSettingsValues = {
   hero_image_alt: string;
   hero_image_file: File | null;
   remove_hero_image: boolean;
+  about_image_alt: string;
+  about_image_file: File | null;
+  remove_about_image: boolean;
 };
 
 function parseSiteSettings(
@@ -142,6 +145,42 @@ if (hero_description.length > 1000) {
   const remove_hero_image =
     String(formData.get("remove_hero_image") ?? "") === "on";
 
+  const about_image_alt = String(
+    formData.get("about_image_alt") ?? "",
+  ).trim();
+
+  if (about_image_alt.length > 300) {
+    return {
+      ok: false,
+      error: "Alt text foto tentang terlalu panjang (maksimal 300 karakter).",
+    };
+  }
+
+  const rawAboutFile = formData.get("about_image_file");
+
+  let about_image_file: File | null = null;
+
+  if (rawAboutFile instanceof File && rawAboutFile.size > 0) {
+    if (!ALLOWED_IMAGE_TYPES.has(rawAboutFile.type)) {
+      return {
+        ok: false,
+        error: "Foto tentang harus JPEG, PNG, WebP, atau AVIF.",
+      };
+    }
+
+    if (rawAboutFile.size > MAX_IMAGE_BYTES) {
+      return {
+        ok: false,
+        error: "Ukuran foto tentang maksimal 5 MB.",
+      };
+    }
+
+    about_image_file = rawAboutFile;
+  }
+
+  const remove_about_image =
+    String(formData.get("remove_about_image") ?? "") === "on";
+
   return {
     ok: true,
     values: {
@@ -151,6 +190,9 @@ if (hero_description.length > 1000) {
       hero_image_alt,
       hero_image_file,
       remove_hero_image,
+      about_image_alt,
+      about_image_file,
+      remove_about_image,
     },
   };
 }
@@ -177,7 +219,7 @@ export async function updateSiteSettings(
 
   const { data: currentSettings, error: currentError } = await supabase
     .from("site_settings")
-    .select("hero_image_path")
+    .select("hero_image_path, about_image_path")
     .eq("id", 1)
     .maybeSingle();
 
@@ -193,6 +235,7 @@ export async function updateSiteSettings(
   }
 
   let hero_image_path = currentSettings?.hero_image_path ?? null;
+  let about_image_path = currentSettings?.about_image_path ?? null;
 
   /*
    * Upload foto baru
@@ -238,10 +281,60 @@ export async function updateSiteSettings(
   }
 
   /*
+   * Upload foto baru tentang
+   */
+  if (parsed.values.about_image_file) {
+    const file = parsed.values.about_image_file;
+
+    const objectPath = newMediaObjectPath(file.type, "about");
+
+    const buffer = await file.arrayBuffer();
+
+    const { error: uploadError } = await supabase.storage
+      .from(MEDIA_BUCKET)
+      .upload(objectPath, buffer, {
+        contentType: file.type,
+        upsert: false,
+      });
+
+    if (uploadError) {
+      console.error(
+        "Gagal upload foto tentang:",
+        uploadError.message,
+      );
+
+      return {
+        error: "Foto tentang gagal diunggah. Silakan coba lagi.",
+      };
+    }
+
+    const publicUrl = buildMediaUrl(objectPath);
+
+    if (!publicUrl) {
+      await supabase.storage
+        .from(MEDIA_BUCKET)
+        .remove([objectPath]);
+
+      return {
+        error: "URL foto tentang tidak dapat dibuat.",
+      };
+    }
+
+    about_image_path = publicUrl;
+  }
+
+  /*
    * Hapus foto jika user memilih hapus
    */
   if (parsed.values.remove_hero_image) {
     hero_image_path = null;
+  }
+
+  /*
+   * Hapus foto tentang jika user memilih hapus
+   */
+  if (parsed.values.remove_about_image) {
+    about_image_path = null;
   }
 
   const { error } = await supabase
@@ -252,6 +345,8 @@ export async function updateSiteSettings(
       hero_description: parsed.values.hero_description,
       hero_image_path,
       hero_image_alt: parsed.values.hero_image_alt,
+      about_image_path,
+      about_image_alt: parsed.values.about_image_alt,
     })
     .eq("id", 1);
 
@@ -285,6 +380,31 @@ export async function updateSiteSettings(
       if (removeError) {
         console.warn(
           "Foto hero lama gagal dihapus:",
+          removeError.message,
+        );
+      }
+    }
+  }
+
+  /*
+   * Hapus file foto tentang lama setelah database berhasil diperbarui.
+   */
+  const oldAboutUrl = currentSettings?.about_image_path ?? null;
+
+  if (
+    oldAboutUrl &&
+    oldAboutUrl !== about_image_path
+  ) {
+    const oldObjectPath = mediaObjectPathFromUrl(oldAboutUrl);
+
+    if (oldObjectPath) {
+      const { error: removeError } = await supabase.storage
+        .from(MEDIA_BUCKET)
+        .remove([oldObjectPath]);
+
+      if (removeError) {
+        console.warn(
+          "Foto tentang lama gagal dihapus:",
           removeError.message,
         );
       }

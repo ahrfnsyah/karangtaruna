@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   ...pageMetadata({
     title: "Ubah Pengaturan Tentang",
     description:
-      "Perbarui visi, paragraf, dan foto hero halaman Karang Taruna.",
+      "Perbarui visi, paragraf, foto hero, dan foto tentang halaman Karang Taruna.",
     path: "/admin/tentang/settings",
   }),
   robots: {
@@ -31,7 +31,7 @@ export default async function EditTentangSettingsPage() {
   const { data, error } = await supabase
     .from("site_settings")
     .select(
-      "vision, about_paragraphs, hero_description, hero_image_path, hero_image_alt",
+      "vision, about_paragraphs, hero_description, hero_image_path, hero_image_alt, about_image_path, about_image_alt",
     )
     .eq("id", 1)
     .maybeSingle();
@@ -42,12 +42,16 @@ export default async function EditTentangSettingsPage() {
     hero_description: "",
     hero_image_path: null,
     hero_image_alt: "",
+    about_image_path: null,
+    about_image_alt: "",
   }) as {
     vision: string | null;
     about_paragraphs: string[] | null;
     hero_description: string | null;
     hero_image_path: string | null;
     hero_image_alt: string | null;
+    about_image_path: string | null;
+    about_image_alt: string | null;
   };
 
   return (
@@ -71,8 +75,8 @@ export default async function EditTentangSettingsPage() {
       </h1>
 
       <p className="mt-2 max-w-2xl text-muted-foreground">
-        Perbarui visi, paragraf pembuka, dan foto hero yang ditampilkan
-        pada halaman publik.
+        Perbarui visi, paragraf pembuka, foto hero, dan foto tentang yang
+        ditampilkan pada halaman publik.
       </p>
 
       {error ? (
@@ -94,6 +98,8 @@ export default async function EditTentangSettingsPage() {
             hero_description: settings.hero_description ?? "",
             hero_image_path: settings.hero_image_path ?? null,
             hero_image_alt: settings.hero_image_alt ?? "",
+            about_image_path: settings.about_image_path ?? null,
+            about_image_alt: settings.about_image_alt ?? "",
           }}
         />
       </Card>
