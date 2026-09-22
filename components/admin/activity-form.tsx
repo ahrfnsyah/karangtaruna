@@ -1,11 +1,14 @@
 "use client";
 
-import { useActionState } from "react";
+import { useActionState, useState } from "react";
+
+import Image from "next/image";
 
 import { ACTIVITY_CATEGORIES } from "@/lib/activity-categories";
-import { cn } from "@/lib/utils";
+import { cn, resolveGambar } from "@/lib/utils";
 
 import { LinkButton } from "@/components/ui/button";
+import { UploadIcon } from "@/components/ui/icons";
 import { SubmitButton } from "./submit-button";
 
 export type ActivityFormValues = {
@@ -57,8 +60,10 @@ export function ActivityForm({ action, submitLabel, programs, initial, id }: Act
   const [state, formAction] = useActionState<ActivityFormState, FormData>(action, {
     error: null,
   });
+  const [selectedFileName, setSelectedFileName] = useState<string>("");
 
   const hasError = state.error !== null;
+  const hasCurrentImage = typeof initial?.image_path === "string" && initial.image_path.trim() !== "";
 
   const fieldErrorProps = {
     "aria-invalid": hasError ? true : undefined,
@@ -210,37 +215,76 @@ export function ActivityForm({ action, submitLabel, programs, initial, id }: Act
         />
       </div>
 
-      <div className="grid gap-5 sm:grid-cols-2">
-        <div>
-          <label htmlFor="image_path" className="mb-1.5 block text-sm font-medium text-foreground">
-            Path Gambar <span className="font-normal text-muted-foreground">(opsional)</span>
-          </label>
-          <input
-            id="image_path"
-            name="image_path"
-            type="text"
-            maxLength={500}
-            defaultValue={initial?.image_path ?? ""}
-            placeholder="/images/kegiatan/nama-file.jpg"
-            className={cn(INPUT_BASE, "border-border")}
-            {...fieldErrorProps}
-          />
+      <div className="rounded-control border border-border bg-muted p-4">
+        <label htmlFor="image_file" className="mb-1.5 block text-sm font-medium text-foreground">
+          Gambar Kegiatan <span className="font-normal text-muted-foreground">(opsional)</span>
+        </label>
+
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-control border border-border bg-background">
+            <Image
+              src={resolveGambar(initial?.image_path ?? null)}
+              alt={hasCurrentImage ? "Pratinjau gambar saat ini" : "Belum ada gambar"}
+              fill
+              sizes="96px"
+              className="object-cover"
+            />
+          </div>
+
+          <div className="min-w-0 flex-1">
+            <input
+              id="image_file"
+              name="image_file"
+              type="file"
+              accept="image/jpeg,image/png,image/webp,image/avif"
+              onChange={(event) => setSelectedFileName(event.target.files?.[0]?.name ?? "")}
+              className="block w-full text-sm text-muted-foreground file:mr-3 file:rounded-control file:border-0 file:bg-primary-600 file:px-4 file:py-2.5 file:text-sm file:font-semibold file:text-white file:cursor-pointer file:hover:bg-primary-700"
+              {...fieldErrorProps}
+            />
+            <p className="mt-2 flex items-center gap-1.5 text-xs text-muted-foreground">
+              <UploadIcon className="h-3.5 w-3.5" />
+              Hanya JPEG, PNG, WebP, atau AVIF — maksimal 5 MB.
+            </p>
+            {selectedFileName ? (
+              <p className="mt-1 truncate text-xs font-medium text-accent-700">{selectedFileName}</p>
+            ) : null}
+          </div>
         </div>
-        <div>
-          <label htmlFor="image_alt" className="mb-1.5 block text-sm font-medium text-foreground">
-            Alt Gambar <span className="font-normal text-muted-foreground">(opsional)</span>
-          </label>
-          <input
-            id="image_alt"
-            name="image_alt"
-            type="text"
-            maxLength={300}
-            defaultValue={initial?.image_alt ?? ""}
-            placeholder="Deskripsi singkat gambar"
-            className={cn(INPUT_BASE, "border-border")}
-            {...fieldErrorProps}
-          />
-        </div>
+
+        {id && hasCurrentImage ? (
+          <div className="mt-4 flex items-start gap-3 rounded-control border border-border bg-background px-4 py-3">
+            <input
+              id="remove_image"
+              name="remove_image"
+              type="checkbox"
+              className="mt-0.5 h-4 w-4 rounded-control border-border accent-accent-700"
+            />
+            <label htmlFor="remove_image" className="cursor-pointer select-none">
+              <span className="block text-sm font-medium text-foreground">
+                Hapus gambar saat ini
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                File di galeri media ikut dihapus dan kegiatan tidak menampilkan gambar.
+              </span>
+            </label>
+          </div>
+        ) : null}
+      </div>
+
+      <div>
+        <label htmlFor="image_alt" className="mb-1.5 block text-sm font-medium text-foreground">
+          Alt Gambar <span className="font-normal text-muted-foreground">(opsional)</span>
+        </label>
+        <input
+          id="image_alt"
+          name="image_alt"
+          type="text"
+          maxLength={300}
+          defaultValue={initial?.image_alt ?? ""}
+          placeholder="Deskripsi singkat gambar"
+          className={cn(INPUT_BASE, "border-border")}
+          {...fieldErrorProps}
+        />
       </div>
 
       <div>
