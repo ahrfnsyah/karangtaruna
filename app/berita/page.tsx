@@ -80,7 +80,7 @@ export default async function BeritaPage() {
     );
   }
 
-  const featured = items.find((item) => item.is_featured);
+  const featuredNews = items.filter((item) => item.is_featured);
 
   return (
     <>
@@ -89,11 +89,11 @@ export default async function BeritaPage() {
         title="Kabar Terbaru Karang Taruna"
         description="Informasi, cerita kegiatan, dan kabar terbaru dari Karang Taruna RT 04 RW 08."
       />
-      {featured ? (
+      {featuredNews.length > 0 ? (
         <Section>
           <Container>
             <h2 className="sr-only">Berita Utama</h2>
-            <FeaturedNews news={featured} />
+            <FeaturedNews news={featuredNews} />
           </Container>
         </Section>
       ) : null}
