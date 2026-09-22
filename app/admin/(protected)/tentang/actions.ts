@@ -53,9 +53,60 @@ async function requireAdmin(): Promise<boolean> {
  * site_settings (singleton)
  * ------------------------------------------------------------------------- */
 
+const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const PHONE_PATTERN = /^\+?[0-9][0-9\s\-()]*$/;
+
+/*
+ * Platform media sosial yang mendapat URL dari Admin Settings → social_links.
+ * Footer hanya merender platform di daftar ini; URL kosong menyembunyikan
+ * platform tersebut (url null + is_active false).
+ */
+const SOCIAL_PLATFORMS = ["Instagram", "Facebook", "TikTok"] as const;
+
+type SocialPlatform = (typeof SOCIAL_PLATFORMS)[number];
+
+const MAX_SOCIAL_URL_LENGTH = 2000;
+
+function normalizeSocialUrl(
+  raw: string,
+): { ok: true; url: string | null } | { ok: false; error: string } {
+  const value = raw.trim();
+
+  if (value === "") {
+    return { ok: true, url: null };
+  }
+
+  if (value.length > MAX_SOCIAL_URL_LENGTH) {
+    return {
+      ok: false,
+      error: "URL media sosial terlalu panjang (maksimal 2000 karakter).",
+    };
+  }
+
+  let parsed: URL;
+
+  try {
+    parsed = new URL(value);
+  } catch {
+    return { ok: false, error: "URL media sosial tidak valid." };
+  }
+
+  if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+    return {
+      ok: false,
+      error: "URL media sosial harus diawali http:// atau https://.",
+    };
+  }
+
+  return { ok: true, url: parsed.toString() };
+}
+
 type SiteSettingsValues = {
   vision: string;
   about_paragraphs: string[];
+  email: string;
+  phone: string;
+  socialLinks: { platform: SocialPlatform; url: string | null }[];
   hero_description: string;
   hero_image_alt: string;
   hero_image_file: File | null;
@@ -77,6 +128,55 @@ function parseSiteSettings(
       ok: false,
       error: "Visi terlalu panjang (maksimal 2000 karakter).",
     };
+  }
+
+  const email = String(formData.get("email") ?? "").trim();
+
+  if (!EMAIL_PATTERN.test(email)) {
+    return {
+      ok: false,
+      error: "Alamat email tidak valid.",
+    };
+  }
+
+  if (email.length > 254) {
+    return {
+      ok: false,
+      error:
+        "Alamat email terlalu panjang (maksimal 254 karakter).",
+    };
+  }
+
+  const phone = String(formData.get("phone") ?? "").trim();
+
+  if (!PHONE_PATTERN.test(phone)) {
+    return {
+      ok: false,
+      error: "Nomor telepon tidak valid.",
+    };
+  }
+
+  if (phone.length > 30) {
+    return {
+      ok: false,
+      error: "Nomor telepon terlalu panjang (maksimal 30 karakter).",
+    };
+  }
+
+  const socialLinks: { platform: SocialPlatform; url: string | null }[] = [];
+
+  for (const platform of SOCIAL_PLATFORMS) {
+    const rawUrl = String(formData.get(platform.toLowerCase()) ?? "");
+    const normalized = normalizeSocialUrl(rawUrl);
+
+    if (!normalized.ok) {
+      return {
+        ok: false,
+        error: `${platform}: ${normalized.error}`,
+      };
+    }
+
+    socialLinks.push({ platform, url: normalized.url });
   }
 
   const about_paragraphs = String(formData.get("about_paragraphs") ?? "")
@@ -186,6 +286,9 @@ if (hero_description.length > 1000) {
     values: {
       vision,
       about_paragraphs,
+      email,
+      phone,
+      socialLinks,
       hero_description,
       hero_image_alt,
       hero_image_file,
@@ -342,6 +445,8 @@ export async function updateSiteSettings(
     .update({
       vision: parsed.values.vision,
       about_paragraphs: parsed.values.about_paragraphs,
+      email: parsed.values.email,
+      phone: parsed.values.phone,
       hero_description: parsed.values.hero_description,
       hero_image_path,
       hero_image_alt: parsed.values.hero_image_alt,
@@ -358,6 +463,34 @@ export async function updateSiteSettings(
 
     return {
       error: "Pengaturan gagal disimpan. Silakan coba lagi.",
+    };
+  }
+
+  /*
+   * Simpan URL media sosial ke social_links.
+   * URL kosong → url null + is_active false (menyembunyikan platform dari
+   * footer karena kebijakan baca publik hanya mengembalikan baris aktif).
+   */
+  const socialRows = parsed.values.socialLinks.map((social, index) => ({
+    platform: social.platform,
+    label: social.platform,
+    url: social.url,
+    is_active: social.url !== null,
+    sort_order: index,
+  }));
+
+  const { error: socialError } = await supabase
+    .from("social_links")
+    .upsert(socialRows, { onConflict: "platform" });
+
+  if (socialError) {
+    console.error(
+      "Gagal memperbarui media sosial:",
+      socialError.message,
+    );
+
+    return {
+      error: "Pengaturan media sosial gagal disimpan. Silakan coba lagi.",
     };
   }
 
@@ -413,6 +546,7 @@ export async function updateSiteSettings(
 
   revalidatePath("/");
   revalidatePath("/tentang");
+  revalidatePath("/kontak");
   revalidatePath("/admin/tentang");
   revalidatePath("/admin/tentang/settings");
 

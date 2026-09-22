@@ -24,6 +24,11 @@ type SettingsFormAction = (
 export type SettingsInitial = {
   vision: string;
   about_paragraphs: string[];
+  email: string;
+  phone: string;
+  instagram: string;
+  facebook: string;
+  tiktok: string;
   hero_description: string;
   hero_image_path: string | null;
   hero_image_alt: string;
@@ -290,6 +295,150 @@ export function TentangSettingsForm({
             Hapus foto tentang
           </label>
         ) : null}
+      </div>
+
+      {/* Kontak */}
+      <div className="space-y-5 border-t border-border pt-5">
+        <div>
+          <label
+            htmlFor="email"
+            className="mb-1.5 block text-sm font-medium text-foreground"
+          >
+            Email
+          </label>
+
+          <input
+            id="email"
+            name="email"
+            type="email"
+            maxLength={254}
+            defaultValue={initial.email}
+            placeholder="email@karangtaruna.example"
+            className={cn(
+              INPUT_BASE,
+              state.error && "border-accent-700",
+            )}
+            {...errorProps}
+          />
+
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Ditampilkan pada footer dan halaman kontak.
+          </p>
+        </div>
+
+        <div>
+          <label
+            htmlFor="phone"
+            className="mb-1.5 block text-sm font-medium text-foreground"
+          >
+            Nomor Telepon
+          </label>
+
+          <input
+            id="phone"
+            name="phone"
+            type="tel"
+            maxLength={30}
+            defaultValue={initial.phone}
+            placeholder="+62 812-3456-7890"
+            className={cn(
+              INPUT_BASE,
+              state.error && "border-accent-700",
+            )}
+            {...errorProps}
+          />
+
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Ditampilkan pada footer dan halaman kontak.
+          </p>
+        </div>
+      </div>
+
+      {/* Sosial Media */}
+      <div className="space-y-5 border-t border-border pt-5">
+        <div>
+          <label
+            htmlFor="instagram"
+            className="mb-1.5 block text-sm font-medium text-foreground"
+          >
+            URL Instagram
+          </label>
+
+          <input
+            id="instagram"
+            name="instagram"
+            type="url"
+            maxLength={2000}
+            defaultValue={initial.instagram}
+            placeholder="https://www.instagram.com/username"
+            className={cn(
+              INPUT_BASE,
+              state.error && "border-accent-700",
+            )}
+            {...errorProps}
+          />
+
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Kosongkan untuk menyembunyikan Instagram dari footer. Dibuka di tab
+            baru.
+          </p>
+        </div>
+
+        <div>
+          <label
+            htmlFor="facebook"
+            className="mb-1.5 block text-sm font-medium text-foreground"
+          >
+            URL Facebook
+          </label>
+
+          <input
+            id="facebook"
+            name="facebook"
+            type="url"
+            maxLength={2000}
+            defaultValue={initial.facebook}
+            placeholder="https://www.facebook.com/username"
+            className={cn(
+              INPUT_BASE,
+              state.error && "border-accent-700",
+            )}
+            {...errorProps}
+          />
+
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Kosongkan untuk menyembunyikan Facebook dari footer. Dibuka di tab
+            baru.
+          </p>
+        </div>
+
+        <div>
+          <label
+            htmlFor="tiktok"
+            className="mb-1.5 block text-sm font-medium text-foreground"
+          >
+            URL TikTok
+          </label>
+
+          <input
+            id="tiktok"
+            name="tiktok"
+            type="url"
+            maxLength={2000}
+            defaultValue={initial.tiktok}
+            placeholder="https://www.tiktok.com/@username"
+            className={cn(
+              INPUT_BASE,
+              state.error && "border-accent-700",
+            )}
+            {...errorProps}
+          />
+
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            Kosongkan untuk menyembunyikan TikTok dari footer. Dibuka di tab
+            baru.
+          </p>
+        </div>
       </div>
 
       {/* Error */}

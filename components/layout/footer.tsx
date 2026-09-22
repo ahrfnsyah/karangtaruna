@@ -1,11 +1,109 @@
+import type { ComponentType, SVGProps } from "react";
+import type { SupabaseClient } from "@supabase/supabase-js";
+
 import Link from "next/link";
 
 import { Container } from "@/components/ui/container";
-import { contactInfo, socialMedia } from "@/lib/data/contact";
+import { contactInfo } from "@/lib/data/contact";
 import { NAV_ITEMS } from "@/lib/navigation";
+import { createClient } from "@/lib/supabase/server";
+import type { SocialLink } from "@/lib/types";
+import {
+  FacebookIcon,
+  InstagramIcon,
+  TikTokIcon,
+} from "@/components/ui/icons";
 
-export function Footer() {
+/*
+ * Satu-satunya platform media sosial yang boleh dirender footer.
+ * WhatsApp sengaja tidak lagi dipakai.
+ */
+const SOCIAL_PLATFORMS = ["Instagram", "Facebook", "TikTok"] as const;
+
+const SOCIAL_ICONS: Record<
+  (typeof SOCIAL_PLATFORMS)[number],
+  ComponentType<SVGProps<SVGSVGElement>>
+> = {
+  Instagram: InstagramIcon,
+  Facebook: FacebookIcon,
+  TikTok: TikTokIcon,
+};
+
+async function getFooterContact(
+  supabase: SupabaseClient,
+): Promise<{ email: string; phone: string }> {
+  try {
+    const { data, error } = await supabase
+      .from("site_settings")
+      .select("email, phone")
+      .eq("id", 1)
+      .maybeSingle();
+
+    if (error || !data) {
+      console.error(
+        "Gagal mengambil kontak footer:",
+        error?.message ?? "Data site_settings tidak ditemukan.",
+      );
+    }
+
+    return {
+      email: data?.email || contactInfo.email,
+      phone: data?.phone || contactInfo.phone,
+    };
+  } catch (err) {
+    console.error(
+      "Gagal mengambil kontak footer:",
+      err instanceof Error ? err.message : "Kesalahan tidak diketahui",
+    );
+
+    return {
+      email: contactInfo.email,
+      phone: contactInfo.phone,
+    };
+  }
+}
+
+async function getFooterSocials(
+  supabase: SupabaseClient,
+): Promise<SocialLink[]> {
+  try {
+    const { data, error } = await supabase
+      .from("social_links")
+      .select("platform, label, url, is_active")
+      .eq("is_active", true)
+      .order("sort_order", { ascending: true });
+
+    if (error) {
+      console.error(
+        "Gagal mengambil media sosial footer:",
+        error.message,
+      );
+      return [];
+    }
+
+    return (data ?? []).filter(
+      (link): link is SocialLink =>
+        link.url != null &&
+        link.url.trim() !== "" &&
+        SOCIAL_PLATFORMS.includes(link.platform as (typeof SOCIAL_PLATFORMS)[number]),
+    );
+  } catch (err) {
+    console.error(
+      "Gagal mengambil media sosial footer:",
+      err instanceof Error ? err.message : "Kesalahan tidak diketahui",
+    );
+    return [];
+  }
+}
+
+export async function Footer() {
   const year = new Date().getFullYear();
+  const supabase = await createClient();
+
+  const [contact, socialLinks] = await Promise.all([
+    getFooterContact(supabase),
+    getFooterSocials(supabase),
+  ]);
 
   return (
     <footer className="bg-primary-950 text-slate-300">
@@ -25,18 +123,28 @@ export function Footer() {
               Wadah pembinaan dan pengembangan generasi muda untuk membangun
               lingkungan yang aktif, kreatif, dan peduli terhadap sesama.
             </p>
-            <div className="mt-6 flex flex-wrap gap-2.5">
-              {socialMedia.map(({ name, status }) => (
-                <span
-                  key={name}
-                  title={status}
-                  className="rounded-full border border-white/15 px-3.5 py-1.5 text-sm font-medium text-slate-400"
-                >
-                  {name}
-                  <span className="sr-only"> ({status})</span>
-                </span>
-              ))}
-            </div>
+            {socialLinks.length > 0 ? (
+              <ul className="mt-6 flex flex-wrap gap-2.5">
+                {socialLinks.map((social) => {
+                  const Icon = SOCIAL_ICONS[social.platform as (typeof SOCIAL_PLATFORMS)[number]];
+
+                  return (
+                    <li key={social.platform}>
+                      <a
+                        href={social.url ?? undefined}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-2 rounded-full border border-white/15 px-3.5 py-1.5 text-sm font-medium text-slate-400 transition-colors hover:border-white/30 hover:text-white"
+                      >
+                        <Icon className="h-4 w-4" />
+                        {social.label}
+                        <span className="sr-only"> (buka di tab baru)</span>
+                      </a>
+                    </li>
+                  );
+                })}
+              </ul>
+            ) : null}
           </div>
 
           <nav aria-label="Tautan halaman">
@@ -64,9 +172,9 @@ export function Footer() {
             <address className="mt-4 space-y-2.5 text-sm not-italic leading-relaxed text-slate-400">
               <p>{contactInfo.address}</p>
               <p>
-                {contactInfo.email}
+                {contact.email}
                 <br />
-                {contactInfo.phone}
+                {contact.phone}
               </p>
             </address>
           </div>

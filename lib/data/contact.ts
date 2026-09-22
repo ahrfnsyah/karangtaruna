@@ -18,7 +18,7 @@ export const contactInfo = {
 } as const;
 
 export const socialMedia = [
-  { name: "Instagram", status: "Segera tersedia" as const },
-  { name: "Facebook", status: "Segera tersedia" as const },
-  { name: "WhatsApp", status: "Segera tersedia" as const },
+  { name: "Instagram", status: "Segera tersedia" },
+  { name: "Facebook", status: "Segera tersedia" },
+  { name: "TikTok", status: "Segera tersedia" },
 ] as const;
