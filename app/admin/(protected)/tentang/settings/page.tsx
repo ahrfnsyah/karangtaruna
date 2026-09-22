@@ -28,17 +28,27 @@ export const metadata: Metadata = {
 export default async function EditTentangSettingsPage() {
   const supabase = await createClient();
 
-  const { data, error } = await supabase
-    .from("site_settings")
-    .select(
-      "vision, about_paragraphs, hero_description, hero_image_path, hero_image_alt, about_image_path, about_image_alt",
-    )
-    .eq("id", 1)
-    .maybeSingle();
+  const [settingsResult, socialResult] = await Promise.all([
+    supabase
+      .from("site_settings")
+      .select(
+        "vision, about_paragraphs, email, phone, hero_description, hero_image_path, hero_image_alt, about_image_path, about_image_alt",
+      )
+      .eq("id", 1)
+      .maybeSingle(),
+    supabase
+      .from("social_links")
+      .select("platform, url")
+      .in("platform", ["Instagram", "Facebook", "TikTok"]),
+  ]);
+
+  const { data, error } = settingsResult;
 
   const settings = (data ?? {
     vision: "",
     about_paragraphs: [],
+    email: "",
+    phone: "",
     hero_description: "",
     hero_image_path: null,
     hero_image_alt: "",
@@ -47,12 +57,28 @@ export default async function EditTentangSettingsPage() {
   }) as {
     vision: string | null;
     about_paragraphs: string[] | null;
+    email: string | null;
+    phone: string | null;
     hero_description: string | null;
     hero_image_path: string | null;
     hero_image_alt: string | null;
     about_image_path: string | null;
     about_image_alt: string | null;
   };
+
+  if (socialResult.error) {
+    console.error(
+      "Gagal memuat media sosial:",
+      socialResult.error.message,
+    );
+  }
+
+  const socialByPlatform = new Map(
+    (socialResult.data ?? []).map((row) => [
+      row.platform.toLowerCase(),
+      row.url ?? "",
+    ]),
+  );
 
   return (
     <div>
@@ -75,8 +101,8 @@ export default async function EditTentangSettingsPage() {
       </h1>
 
       <p className="mt-2 max-w-2xl text-muted-foreground">
-        Perbarui visi, paragraf pembuka, foto hero, dan foto tentang yang
-        ditampilkan pada halaman publik.
+        Perbarui visi, paragraf pembuka, foto hero, foto tentang, dan kontak
+        yang ditampilkan pada halaman publik.
       </p>
 
       {error ? (
@@ -95,6 +121,11 @@ export default async function EditTentangSettingsPage() {
           initial={{
             vision: settings.vision ?? "",
             about_paragraphs: settings.about_paragraphs ?? [],
+            email: settings.email ?? "",
+            phone: settings.phone ?? "",
+            instagram: socialByPlatform.get("instagram") ?? "",
+            facebook: socialByPlatform.get("facebook") ?? "",
+            tiktok: socialByPlatform.get("tiktok") ?? "",
             hero_description: settings.hero_description ?? "",
             hero_image_path: settings.hero_image_path ?? null,
             hero_image_alt: settings.hero_image_alt ?? "",
