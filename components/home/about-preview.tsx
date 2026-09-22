@@ -12,15 +12,23 @@ const focusPoints = [
   "Kontribusi untuk lingkungan Srengseng Sawah",
 ];
 
-export function AboutPreview() {
+type AboutPreviewProps = {
+  imagePath?: string | null;
+  imageAlt?: string;
+};
+
+export function AboutPreview({ imagePath, imageAlt }: AboutPreviewProps) {
   return (
     <Section muted>
       <Container>
         <div className="grid items-center gap-12 lg:grid-cols-2">
           <div className="order-2 lg:order-1">
             <Image
-              src="/images/placeholders/about.svg"
-              alt="Kebersamaan anggota Karang Taruna dalam kegiatan (foto placeholder)"
+              src={imagePath || "/images/placeholders/about.svg"}
+              alt={
+                imageAlt ||
+                "Kebersamaan anggota Karang Taruna dalam kegiatan (foto placeholder)"
+              }
               width={960}
               height={720}
               className="h-auto w-full rounded-card shadow-card"

@@ -27,6 +27,8 @@ export type SettingsInitial = {
   hero_description: string;
   hero_image_path: string | null;
   hero_image_alt: string;
+  about_image_path: string | null;
+  about_image_alt: string;
 };
 
 type SettingsFormProps = {
@@ -209,6 +211,83 @@ export function TentangSettingsForm({
               className="h-4 w-4"
             />
             Hapus foto hero
+          </label>
+        ) : null}
+      </div>
+
+      {/* Foto Tentang */}
+      <div className="space-y-3 border-t border-border pt-5">
+        <div>
+          <label
+            htmlFor="about_image_file"
+            className="mb-1.5 block text-sm font-medium text-foreground"
+          >
+            Foto Tentang Beranda
+          </label>
+
+          {initial.about_image_path ? (
+            <div className="mb-4 overflow-hidden rounded-card border border-border">
+              <div className="relative aspect-4/3 w-full">
+                <Image
+                  src={initial.about_image_path}
+                  alt={initial.about_image_alt || "Foto Tentang Beranda"}
+                  fill
+                  sizes="(min-width: 768px) 768px, 100vw"
+                  className="object-cover"
+                />
+              </div>
+            </div>
+          ) : (
+            <div className="mb-4 rounded-card border border-dashed border-border bg-muted px-5 py-8 text-center text-sm text-muted-foreground">
+              Belum ada foto tentang. Beranda akan menggunakan placeholder.
+            </div>
+          )}
+
+          <input
+            id="about_image_file"
+            name="about_image_file"
+            type="file"
+            accept="image/jpeg,image/png,image/webp,image/avif"
+            className="block w-full rounded-control border border-border bg-background px-3 py-2 text-sm"
+          />
+
+          <p className="mt-1.5 text-xs text-muted-foreground">
+            JPEG, PNG, WebP, atau AVIF. Maksimal 5 MB.
+          </p>
+        </div>
+
+        {/* Alt Text */}
+        <div>
+          <label
+            htmlFor="about_image_alt"
+            className="mb-1.5 block text-sm font-medium text-foreground"
+          >
+            Alt Text Foto Tentang
+          </label>
+
+          <input
+            id="about_image_alt"
+            name="about_image_alt"
+            type="text"
+            maxLength={300}
+            defaultValue={initial.about_image_alt}
+            placeholder="Kebersamaan anggota Karang Taruna dalam kegiatan"
+            className={cn(
+              INPUT_BASE,
+              state.error && "border-accent-700",
+            )}
+          />
+        </div>
+
+        {/* Hapus Foto */}
+        {initial.about_image_path ? (
+          <label className="flex items-center gap-2 text-sm text-muted-foreground">
+            <input
+              type="checkbox"
+              name="remove_about_image"
+              className="h-4 w-4"
+            />
+            Hapus foto tentang
           </label>
         ) : null}
       </div>
