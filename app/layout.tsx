@@ -8,6 +8,8 @@ import { Navbar } from "@/components/layout/navbar";
 
 import { siteConfig } from "@/lib/site";
 
+import "leaflet/dist/leaflet.css";
+
 import "./globals.css";
 
 const geistSans = Geist({
